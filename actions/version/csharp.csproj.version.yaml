@@ -1,0 +1,18 @@
+- name: apply-sematic-version_to_csproj
+  run: |
+    echo Semantic Version
+    echo ${env:SEMANTIC_VERSION}
+    echo $GITHUB_WORKSPACE
+    Get-ChildItem -Recurse -Path $GITHUB_WORKSPACE -Filter *.csproj | % { 
+      echo $_.FullName
+      $content = Get-Content $_.FullName
+      if ($content -like '*Version>*') {
+        $replaced = $content -replace "<Version>\d{1,5}\.\d{1,5}\.\d{1,5}\.\d{1,5}</Version>", "<Version>${env:SEMANTIC_VERSION}</Version>"
+        $replaced = $replaced -replace "<AssemblyVersion>\d{1,5}\.\d{1,5}\.\d{1,5}\.\d{1,5}</AssemblyVersion>", "<AssemblyVersion>${env:SEMANTIC_VERSION}</AssemblyVersion>"
+        $replaced = $replaced -replace "<FileVersion>\d{1,5}\.\d{1,5}\.\d{1,5}\.\d{1,5}</FileVersion>", "<FileVersion>${env:SEMANTIC_VERSION}</FileVersion>"
+        $replaced | out-file -FilePath $_.FullName -Encoding UTF8
+        echo $replaced
+        echo "---------- DONE ----------"
+      }
+    }
+  shell: pwsh
